@@ -258,6 +258,13 @@
     content: '●';
     color: #7dd87d;
     margin-right: 5px;
+    animation: dot-blink 1.4s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  @keyframes dot-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
   }
 
   /* ============ SIDEBAR MODULES ============ */
@@ -376,7 +383,7 @@
   /* ============ TOP 8 BRANDS ============ */
   .top8 {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
     margin-top: 8px;
   }
@@ -386,16 +393,20 @@
     display: block;
     text-decoration: none;
     color: inherit;
+    min-width: 0;
+    width: 100%;
   }
-  .top8-link .top8-card { height: 100%; }
+  .top8-link .top8-card { height: 100%; width: 100%; }
 
   .top8-card {
     background: white;
     border: 2px solid var(--vda-forest);
-    padding: 12px 8px;
+    padding: 12px 6px;
     text-align: center;
     position: relative;
     transition: transform 0.15s;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .top8-card:hover {
@@ -425,15 +436,23 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 6px;
+    width: 100%;
+    overflow: hidden;
   }
 
-  .top8-logo svg { max-height: 100%; max-width: 100%; }
+  .top8-logo svg {
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+  }
 
   .top8-name {
     font-family: 'Playfair Display', serif;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--vda-forest);
-    line-height: 1.2;
+    line-height: 1.25;
+    word-break: break-word;
   }
 
   .top8-role {
@@ -784,7 +803,7 @@
   @media (max-width: 820px) {
     .main { grid-template-columns: 1fr; }
     .sidebar { border-right: none; border-bottom: 1px solid var(--vda-forest); }
-    .top8 { grid-template-columns: repeat(2, 1fr); }
+    .top8 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .logo-row { grid-template-columns: 1fr; }
     .photo-gallery, .photo-caption { grid-template-columns: repeat(2, 1fr); }
     .banner-inner { flex-direction: column; align-items: flex-start; }
@@ -950,9 +969,13 @@
         <div class="content-header">◆ About Veronica</div>
         <div class="content-sub">&gt; currently: running two businesses from a laptop</div>
 
-        <p class="bio-text">Veronica Dietz is a diagnostic strategist with roughly two decades in sales, marketing, and brand strategy across Fortune 500 brands, funded startups, and bootstrapped founders. She operates two businesses: VD Advisory Group, a strategic advisory practice, and Tyche Digital Agency, a full-service marketing and implementation shop.</p>
+        <p class="bio-text">Veronica Dietz is the operator founders call when the strategy on paper stops matching the business in the room. MBA. Twenty years in sales, marketing, and brand strategy across Fortune 500 rooms, funded startups, and bootstrapped brands that went on to do serious numbers. She runs two companies now: VD Advisory Group, a diagnostic advisory practice for founders who are done being told what to think, and Tyche Digital Agency, a full-service marketing team that actually builds the thing. Advisory and implementation under one roof. That is rare on purpose.</p>
 
-        <p class="bio-text">Her work centers on what she calls the load-bearing issue: the structural problem that sits one layer beneath the symptom a business is trying to fix. She hosts The Aligned Edit, a podcast currently in its third season, and writes on strategy, business structure, and the quieter side of operating.</p>
+        <p class="bio-text">What she does better than almost anyone is find the load-bearing issue. The structural problem sitting one layer beneath the thing everyone is arguing about. Once you name that out loud, the rest of the business tends to loosen up on its own. It is why her Direction Sessions get booked out, why The Residency sells without a launch, and why her client roster grows almost entirely through referral. She hosts The Aligned Edit, now in its third season, and writes at The Observation Desk on strategy, structure, and the quieter mechanics of building something that lasts.</p>
+
+        <p class="bio-text">The rest of it, because press asks: Orange County kid, Las Vegas operator, Missoula when the mountains call. Mother of two, a daughter into her own adulthood and a son into his own shape. She builds AI agents, strength trains, hikes long, plays racket sports, watches the Vegas Golden Knights, and reads natal charts with the same attention she reads a P&amp;L. No favorites. No routines. Preferences, moods, and rituals. She will be your greatest blessing or your worst nightmare, and which one you get is entirely up to you. Believe what you hear, on both sides of the ledger. Everyone who has a version of her earned the version they got.</p>
+
+        <p class="bio-text" style="font-family:'Playfair Display',serif;font-style:italic;font-size:17px;color:var(--vda-burnt);border-left:3px solid var(--vda-burnt);padding-left:16px;margin-top:24px">She is exactly the guest, panelist, or contributor who makes the room lean in. Book her while she still says yes on the first email.</p>
       </div>
 
       <!-- TOP 8 BRANDS -->
@@ -1431,25 +1454,40 @@
   }
 
 
-  // Visitor counter - starts at 111, increments once per browser session
+  // Global visitor counter - shared across all visitors, starts at 111
   (function() {
     const counterEl = document.getElementById('visitor-counter');
     if (!counterEl) return;
     const STARTING = 111;
-    const STORAGE_KEY = 'vd_visitor_count';
-    const SESSION_KEY = 'vd_visitor_counted_this_session';
+    const SESSION_KEY = 'vd_pk_counted';
 
-    let count = parseInt(localStorage.getItem(STORAGE_KEY) || STARTING, 10);
-    if (isNaN(count) || count < STARTING) count = STARTING;
+    // Show starting value immediately so it never looks broken
+    counterEl.textContent = String(STARTING).padStart(8, '0');
 
-    // Only increment once per session (not on every page reload)
-    if (!sessionStorage.getItem(SESSION_KEY)) {
-      count += 1;
-      localStorage.setItem(STORAGE_KEY, count);
-      sessionStorage.setItem(SESSION_KEY, '1');
-    }
+    // Use abacus.jasoncameron.dev - free hit counter service, no signup needed
+    // Namespace/key uniquely identifies this counter
+    const NS = 'veronicadietz-com';
+    const KEY = 'press-kit';
 
-    counterEl.textContent = String(count).padStart(8, '0');
+    const alreadyCounted = sessionStorage.getItem(SESSION_KEY);
+    // If this session already counted, just fetch the current value (don't increment)
+    const endpoint = alreadyCounted
+      ? 'https://abacus.jasoncameron.dev/get/' + NS + '/' + KEY
+      : 'https://abacus.jasoncameron.dev/hit/' + NS + '/' + KEY;
+
+    fetch(endpoint)
+      .then(r => r.json())
+      .then(data => {
+        // API returns { value: N } or { count: N } depending on endpoint
+        const raw = (data.value !== undefined ? data.value : data.count) || 0;
+        const display = Math.max(STARTING, raw + STARTING);
+        counterEl.textContent = String(display).padStart(8, '0');
+        if (!alreadyCounted) sessionStorage.setItem(SESSION_KEY, '1');
+      })
+      .catch(err => {
+        // Network failure - leave the starting value showing, no error visible
+        console.warn('Counter fetch failed:', err);
+      });
   })();
 
   let toastTimer;
