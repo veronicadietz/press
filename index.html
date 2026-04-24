@@ -458,15 +458,22 @@
     display: grid; grid-template-columns: 2.2fr 1fr 0.8fr;
     gap: 20px; padding: 18px 0; align-items: baseline;
     border-bottom: 1px solid rgba(31,29,23,0.12);
-    transition: background 0.2s;
+    transition: background 0.45s ease, padding 0.45s ease, margin 0.45s ease;
     text-decoration: none; color: inherit; cursor: pointer;
+    position: relative;
   }
   .service-row:last-child { border-bottom: none; }
   .service-row:hover { background: rgba(194,81,26,0.04); }
-  .service-row.highlighted { background: rgba(194,81,26,0.07); margin: 0 -12px; padding: 18px 12px; position: relative; }
-  .service-row.highlighted::before {
-    content: '☞'; position: absolute; left: -34px; top: 16px;
-    font-size: 26px; color: var(--rust); transform: rotate(-10deg);
+  .service-row.is-active {
+    background: rgba(194,81,26,0.07);
+    margin: 0 -12px;
+    padding: 18px 12px;
+  }
+  .service-row.is-active::before {
+    content: '☞';
+    position: absolute; left: -34px; top: 16px;
+    font-size: 26px; color: var(--rust);
+    transform: rotate(-10deg);
     animation: wiggle 2.5s ease-in-out infinite;
     --r: -10deg;
   }
@@ -956,7 +963,7 @@
         <div class="service-format">multi-session</div>
         <div class="service-price">$1,000</div>
       </a>
-      <a class="service-row highlighted" href="https://go.veronicadietz.com/stop-starting-over" target="_blank" rel="noopener">
+      <a class="service-row" href="https://go.veronicadietz.com/stop-starting-over" target="_blank" rel="noopener">
         <div class="service-name">Stop Starting Over<em>12-week engagement</em></div>
         <div class="service-format">12 weeks</div>
         <div class="service-price">$7,500</div>
@@ -1107,7 +1114,7 @@
   </section>
 
   <footer>
-    <div>© 2026 Veronica Dietz · Media Kit v8</div>
+    <div>© 2026 Veronica Dietz · Media Kit v9</div>
     <div class="links">
       <a href="#">Home</a><a href="#about">About</a><a href="#services">Services</a><a href="#contact">Contact</a>
     </div>
@@ -1131,6 +1138,19 @@
       }
       var total = OFFSET + count;
       el.textContent = String(total).padStart(8, '0');
+    })();
+
+    // Roving pointer — cycles the ☞ highlight through every service row
+    (function() {
+      var rows = document.querySelectorAll('.service-row');
+      if (rows.length < 2) return;
+      var i = 0;
+      rows[i].classList.add('is-active');
+      setInterval(function() {
+        rows[i].classList.remove('is-active');
+        i = (i + 1) % rows.length;
+        rows[i].classList.add('is-active');
+      }, 2200); // ~2.2s per row — fast enough to feel alive, slow enough to read
     })();
   </script>
 
